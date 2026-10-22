@@ -365,7 +365,7 @@
       font-family: inherit;
       cursor: pointer;
       transition: background 0.2s ease;
-    }
+    const DEFAULT_PDF_NAME = 'portfolio.pdf';
 
     .primary-btn:hover {
       background: var(--accent-hover);
@@ -513,20 +513,20 @@
     const pageSlider = document.getElementById('page-slider');
     const totalPagesLabel = document.getElementById('total-pages-label');
     const zoomContainer = document.getElementById('zoom-container');
-    const zoomLabel = document.getElementById('zoom-label');
-
-    // Синтез мягкого звука перелистывания листа через Web Audio API (без внешних mp3)
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playPaperFlipSound() {
-      if (!soundEnabled) return;
+    async function tryAutoLoadDefaultPDF() {
+      selectBtn.style.display = 'none';
+      document.getElementById('modal-desc').textContent = 'Загрузка портфолио... Пожалуйста, подождите пару секунд.';
+      progressBox.style.display = 'block';
       try {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const duration = 0.22;
-        const bufferSize = audioCtx.sampleRate * duration;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          const env = Math.sin((i / bufferSize) * Math.PI);
+        const response = await fetch(DEFAULT_PDF_NAME);
+        if (!response.ok) throw new Error('Файл не найден');
+        const buffer = await response.arrayBuffer();
+        const pages = await extractA4PagesFromPDF(buffer);
+        buildFlipbook(pages);
+      } catch (e) {
+        document.getElementById('modal-desc').textContent = 'Не удалось автоматически найти файл ' + DEFAULT_PDF_NAME + ' в репозитории.';
+        selectBtn.style.display = 'inline-block';
+      }
           data[i] = (Math.random() * 2 - 1) * env * 0.04;
         }
         const noise = audioCtx.createBufferSource();
