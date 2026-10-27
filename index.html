@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Станислава Меньшикова — Портфолио | Ландшафтная архитектура 2026</title>
+  
+  <!-- Шрифты -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- PDF.js для рендеринга страниц -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- StPageFlip для физики перелистывания горизонтальных листов А4 -->
+  <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #161716;
+      --panel-bg: rgba(28, 30, 28, 0.86);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --text-primary: #f2f4f2;
+      --text-muted: #9aa09a;
+      --accent: #6b8e63;
+      --accent-hover: #82a879;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at 50% 45%, #252825 0%, #111211 100%);
+      color: var(--text-primary);
+      height: 100vh;
+      height: 100dvh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      touch-action: none;
+    }
+
+    /* Верхняя панель навигации */
+    header {
+      min-height: 56px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 30;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      white-space: nowrap;
+    }
+
+    .brand-title {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      padding-left: 12px;
+      border-left: 1px solid var(--border-color);
+    }
+
+    /* Закладки по разделам портфолио */
+    .chapters {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .chapters::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chapter-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 6px 11px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: inherit;
+      font-weight: 400;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .chapter-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .chapter-btn.active {
+      color: #fff;
+      background: rgba(107, 142, 99, 0.28);
+      border-color: rgba(107, 142, 99, 0.6);
+    }
+
+    .tools {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      height: 32px;
+      padding: 0 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: inherit;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .icon-btn.download {
+      background: rgba(107, 142, 99, 0.22);
+      border-color: rgba(107, 142, 99, 0.5);
+    }
+
+    .icon-btn.download:hover {
+      background: rgba(107, 142, 99, 0.38);
+    }
+
+    /* Рабочая область со сценой книги */
+    main {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 16px 54px;
+    }
+
+    #zoom-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+      transform-origin: center center;
+      will-change: transform;
+    }
+
+    #zoom-container.dragging {
+      transition: none;
+    }
+
+    /* По умолчанию (ПК и горизонтальные экраны): разворот из 2 листов А4 (594 x 210) */
+    #book-stage {
+      width: min(88vw, calc((100dvh - 140px) * 2.82857));
+      aspect-ratio: 594 / 210;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 24px 44px rgba(0, 0, 0, 0.65));
+    }
+
+    /* В портретном режиме смартфона: 1 горизонтальный лист А4 (297 x 210) во всю ширину */
+    body.single-page-mode #book-stage {
+      width: min(94vw, calc((100dvh - 175px) * 1.41428));
+      aspect-ratio: 297 / 210;
+    }
+
+    #flipbook {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Жесткая фиксация position: absolute убирает смещение углов при перелистывании */
+    .page, .stf__item {
+      background-color: #ffffff;
+      overflow: hidden;
+      position: absolute !important;
+    }
+
+    .page-content {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-content img {
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* Мягкая светотень корешка книги (только для режима разворота) */
+    body:not(.single-page-mode) .page.--left .page-content::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 6%;
+      height: 100%;
+      background: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.08) 75%, rgba(0,0,0,0.18) 100%);
+      pointer-events: none;
+    }
+
+    body:not(.single-page-mode) .page.--right .page-content::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 6%;
+      height: 100%;
+      background: linear-gradient(to left, rgba(0,0,0,0) 0%, rgba(0,0,0,0.06) 75%, rgba(0,0,0,0.15) 100%);
+      pointer-events: none;
+    }
+
+    /* Боковые стрелки перелистывания */
+    .nav-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .nav-arrow:hover {
+      background: rgba(255, 255, 255, 0.14);
+      transform: translateY(-50%) scale(1.06);
+    }
+
+    .nav-arrow.prev { left: 14px; }
+    .nav-arrow.next { right: 14px; }
+
+    /* Нижний бар с прогрессом */
+    footer {
+      height: 46px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--panel-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid var(--border-color);
+      z-index: 30;
+      font-size: 12px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      max-width: 420px;
+      margin: 0 20px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--text-primary);
+      border: 2px solid var(--accent);
+    }
+
+    /* Оверлей загрузки портфолио */
+    #overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(18, 19, 18, 0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      transition: opacity 0.4s ease;
+    }
+
+    #overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .drop-card {
+      max-width: 440px;
+      width: 100%;
+      background: rgba(32, 35, 32, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 34px 26px;
+      text-align: center;
+    }
+
+    .drop-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      background: rgba(107, 142, 99, 0.18);
+      color: var(--accent-hover);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .drop-title {
+      font-size: 17px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .drop-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+
+    .primary-btn {
+      display: none;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 11px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .progress-box {
+      display: block;
+      margin-top: 10px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-bar {
+      width: 8%;
+      height: 100%;
+      background: var(--accent-hover);
+      transition: width 0.2s ease;
+    }
+
+    .progress-text {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Адаптация под смартфоны и планшеты */
+    @media (max-width: 920px) {
+      header {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 8px 12px;
+        gap: 8px;
+      }
+
+      .brand-sub, #sound-btn, #fullscreen-btn, .footer-hint {
+        display: none;
+      }
+
+      .chapters {
+        order: 3;
+        width: 100%;
+        padding-top: 6px;
+        border-top: 1px solid rgba(255, 255, 255, 0.07);
+        justify-content: flex-start;
+      }
+
+      .chapter-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+
+      main {
+        padding: 8px 6px;
+      }
+
+      .nav-arrow {
+        width: 34px;
+        height: 34px;
+        background: rgba(20, 22, 20, 0.65);
+      }
+
+      .nav-arrow.prev { left: 6px; }
+      .nav-arrow.next { right: 6px; }
+
+      footer {
+        height: 42px;
+        padding: 0 12px;
+        font-size: 11px;
+      }
+
+      .slider-wrap {
+        margin: 0 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Экран загрузки портфолио -->
+  <div id="overlay">
+    <div class="drop-card" id="drop-zone">
+      <div class="drop-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+        </svg>
+      </div>
+      <div class="drop-title" id="modal-title">Станислава Меньшикова</div>
+      <div class="drop-desc" id="modal-desc">
+        Загружаем интерактивное портфолио (ландшафтная архитектура | 2026)...
+      </div>
+
+      <div class="progress-box" id="progress-box">
+        <div class="progress-track">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="progress-text" id="progress-text">Подключение к файлу portfolio.pdf...</div>
+      </div>
+
+      <input type="file" id="file-input" accept="application/pdf" style="display:none">
+      <button class="primary-btn" id="select-btn">Выбрать PDF-файл вручную</button>
+    </div>
+  </div>
+
+  <!-- Верхняя панель -->
+  <header>
+    <div class="brand">
+      <span class="brand-title">Меньшикова Станислава</span>
+      <span class="brand-sub">Ландшафтная архитектура | 2026</span>
+    </div>
+
+    <nav class="chapters" id="chapter-nav">
+      <button class="chapter-btn active" data-page="0">Обложка</button>
+      <button class="chapter-btn" data-page="1">CV & Содержание</button>
+      <button class="chapter-btn" data-page="3">01 Эко-парк</button>
+      <button class="chapter-btn" data-page="19">02 Двор</button>
+      <button class="chapter-btn" data-page="29">03 ОКН</button>
+    </nav>
+
+    <div class="tools">
+      <button class="icon-btn" id="zoom-out-btn" title="Отдалить">−</button>
+      <span id="zoom-label" style="font-size:11px; min-width:36px; text-align:center;">100%</span>
+      <button class="icon-btn" id="zoom-in-btn" title="Приблизить чертежи">+</button>
+      <button class="icon-btn" id="sound-btn" title="Звук шелеста бумаги">Звук: Вкл</button>
+      <button class="icon-btn" id="fullscreen-btn" title="Полноэкранный режим">На весь экран</button>
+      <a href="portfolio.pdf" download="Меньшикова_Станислава_Портфолио.pdf" class="icon-btn download" id="download-link" title="Скачать оригинал в PDF">
+        PDF ↓
+      </a>
+    </div>
+  </header>
+
+  <!-- Сцена с книгой -->
+  <main id="main-viewport">
+    <button class="nav-arrow prev" id="prev-btn" title="Предыдущая страница">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+
+    <div id="zoom-container">
+      <div id="book-stage">
+        <div id="flipbook"></div>
+      </div>
+    </div>
+
+    <button class="nav-arrow next" id="next-btn" title="Следующая страница">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
+  </main>
+
+  <!-- Нижняя панель -->
+  <footer>
+    <div id="page-indicator">Стр. 1 из 38</div>
+    <div class="slider-wrap">
+      <span>1</span>
+      <input type="range" id="page-slider" min="1" max="38" value="1">
+      <span id="total-pages-label">38</span>
+    </div>
+    <div class="footer-hint">Двойной клик / тап — приблизить чертеж</div>
+  </footer>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const CANDIDATE_PDF_NAMES = [
+      'portfolio.pdf',
+      'Portfolio.pdf',
+      'Меньшикова Станислава_Портфолио.pdf'
+    ];
+    
+    let pageFlip = null;
+    let cachedPageUrls = [];
+    let totalA4Pages = 0;
+    let currentPageIndex = 0;
+    let isSinglePageMode = false;
+
+    let currentZoom = 1;
+    let isPanning = false;
+    let panStart = { x: 0, y: 0 };
+    let panOffset = { x: 0, y: 0 };
+    let soundEnabled = true;
+
+    const overlay = document.getElementById('overlay');
+    const modalDesc = document.getElementById('modal-desc');
+    const fileInput = document.getElementById('file-input');
+    const selectBtn = document.getElementById('select-btn');
+    const progressBox = document.getElementById('progress-box');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const flipbookEl = document.getElementById('flipbook');
+    const pageIndicator = document.getElementById('page-indicator');
+    const pageSlider = document.getElementById('page-slider');
+    const totalPagesLabel = document.getElementById('total-pages-label');
+    const zoomContainer = document.getElementById('zoom-container');
+    const zoomLabel = document.getElementById('zoom-label');
+    const downloadLink = document.getElementById('download-link');
+
+    // Проверка: нужно ли включить режим 1 листа А4 (для смартфона в вертикальной ориентации)
+    function checkSinglePageMode() {
+      return window.innerWidth < 768 && window.innerHeight > window.innerWidth;
+    }
+
+    function applyLayoutModeClass() {
+      isSinglePageMode = checkSinglePageMode();
+      document.body.classList.toggle('single-page-mode', isSinglePageMode);
+    }
+
+    applyLayoutModeClass();
+
+    // Звук шелеста бумаги
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playPaperFlipSound() {
+      if (!soundEnabled) return;
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const duration = 0.2;
+        const bufferSize = audioCtx.sampleRate * duration;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          const env = Math.sin((i / bufferSize) * Math.PI);
+          data[i] = (Math.random() * 2 - 1) * env * 0.035;
+        }
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1100, audioCtx.currentTime);
+        filter.Q.setValueAtTime(1.8, audioCtx.currentTime);
+        noise.connect(filter);
+        filter.connect(audioCtx.destination);
+        noise.start();
+      } catch (e) {}
+    }
+
+    // Разрезание широких разворотов PDF пополам на горизонтальные листы А4
+    async function extractA4PagesFromPDF(pdfData) {
+      const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+      const pdf = await loadingTask.promise;
+      const numPdfPages = pdf.numPages;
+      const extractedImages = [];
+
+      // Оптимальное качество: для смартфонов 1.65 (быстрая загрузка без вылетов памяти), для ПК 2.2
+      const isMobileDevice = window.innerWidth <= 820;
+      const RENDER_SCALE = isMobileDevice ? 1.65 : 2.2;
+
+      for (let i = 1; i <= numPdfPages; i++) {
+        const pct = Math.max(8, Math.round(((i - 1) / numPdfPages) * 100));
+        progressBar.style.width = `${pct}%`;
+        progressText.textContent = `Подготовка листов: ${i} из ${numPdfPages}...`;
+
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: RENDER_SCALE });
+
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d', { alpha: false });
+        tempCanvas.width = viewport.width;
+        tempCanvas.height = viewport.height;
+
+        await page.render({
+          canvasContext: tempCtx,
+          viewport: viewport
+        }).promise;
+
+        const aspectRatio = viewport.width / viewport.height;
+
+        if (aspectRatio > 2.0) {
+          const halfWidth = Math.floor(viewport.width / 2);
+
+          const leftCanvas = document.createElement('canvas');
+          leftCanvas.width = halfWidth;
+          leftCanvas.height = viewport.height;
+          leftCanvas.getContext('2d').drawImage(
+            tempCanvas, 0, 0, halfWidth, viewport.height, 0, 0, halfWidth, viewport.height
+          );
+          extractedImages.push(leftCanvas.toDataURL('image/jpeg', 0.9));
+
+          const rightCanvas = document.createElement('canvas');
+          rightCanvas.width = viewport.width - halfWidth;
+          rightCanvas.height = viewport.height;
+          rightCanvas.getContext('2d').drawImage(
+            tempCanvas, halfWidth, 0, viewport.width - halfWidth, viewport.height, 0, 0, viewport.width - halfWidth, viewport.height
+          );
+          extractedImages.push(rightCanvas.toDataURL('image/jpeg', 0.9));
+        } else {
+          extractedImages.push(tempCanvas.toDataURL('image/jpeg', 0.9));
+        }
+      }
+
+      progressBar.style.width = '100%';
+      progressText.textContent = 'Открываем альбом...';
+      return extractedImages;
+    }
+
+    // Сборка книги с учетом режима экрана (1 страница на смартфонах вертикально / 2 страницы на ПК)
+    function buildFlipbook(pageDataUrls, startPage = 0) {
+      cachedPageUrls = pageDataUrls;
+      applyLayoutModeClass();
+
+      if (pageFlip) {
+        pageFlip.destroy();
+        pageFlip = null;
+      }
+
+      // Пересоздаем внутренний контейнер
+      const stage = document.getElementById('book-stage');
+      stage.innerHTML = '<div id="flipbook"></div>';
+      const bookEl = document.getElementById('flipbook');
+
+      totalA4Pages = pageDataUrls.length;
+      pageSlider.max = totalA4Pages;
+      totalPagesLabel.textContent = totalA4Pages;
+
+      pageDataUrls.forEach((url, idx) => {
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'page';
+        // На смартфонах в режиме 1 листа делаем все страницы мягкими для плавного свайпа
+        const density = (!isSinglePageMode && (idx === 0 || idx === totalA4Pages - 1)) ? 'hard' : 'soft';
+        pageDiv.setAttribute('data-density', density);
+
+        pageDiv.innerHTML = `
+          <div class="page-content">
+            <img src="${url}" alt="Страница ${idx + 1}" />
+          </div>
+        `;
+        bookEl.appendChild(pageDiv);
+      });
+
+      pageFlip = new St.PageFlip(bookEl, {
+        width: 1188,
+        height: 840,
+        size: 'stretch',
+        minWidth: 240,
+        maxWidth: 2400,
+        minHeight: 170,
+        maxHeight: 1700,
+        maxShadowOpacity: 0.45,
+        showCover: !isSinglePageMode,
+        usePortrait: isSinglePageMode,
+        startPage: startPage,
+        flippingTime: 750,
+        mobileScrollSupport: false
+      });
+
+      pageFlip.loadFromHTML(bookEl.querySelectorAll('.page'));
+
+      pageFlip.on('flip', (e) => {
+        playPaperFlipSound();
+        updateUIState(e.data);
+      });
+
+      updateUIState(startPage);
+      overlay.classList.add('hidden');
+    }
+
+    // Перестроение книги при повороте экрана телефона или изменении ширины окна
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (!cachedPageUrls.length) return;
+        const newMode = checkSinglePageMode();
+        if (newMode !== isSinglePageMode) {
+          currentZoom = 1;
+          applyZoom();
+          buildFlipbook(cachedPageUrls, currentPageIndex);
+        } else if (pageFlip) {
+          pageFlip.update();
+        }
+      }, 220);
+    });
+
+    function updateUIState(pageIndex) {
+      currentPageIndex = pageIndex;
+      const pageNum = pageIndex + 1;
+
+      if (isSinglePageMode) {
+        pageIndicator.textContent = `Стр. ${pageNum} из ${totalA4Pages}`;
+      } else if (pageIndex === 0) {
+        pageIndicator.textContent = `Обложка (1 из ${totalA4Pages})`;
+      } else if (pageIndex >= totalA4Pages - 1) {
+        pageIndicator.textContent = `Задняя обложка (${totalA4Pages} из ${totalA4Pages})`;
+      } else {
+        const leftP = pageIndex % 2 === 1 ? pageIndex + 1 : pageIndex;
+        const rightP = leftP + 1;
+        pageIndicator.textContent = `Разворот ${leftP}–${rightP} из ${totalA4Pages}`;
+      }
+
+      pageSlider.value = pageNum;
+
+      const buttons = document.querySelectorAll('.chapter-btn');
+      let activeBtn = buttons[0];
+      buttons.forEach((btn) => {
+        const target = parseInt(btn.getAttribute('data-page'), 10);
+        if (pageIndex >= target) activeBtn = btn;
+      });
+      buttons.forEach(b => b.classList.remove('active'));
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+        activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    }
+
+    async function handleFile(file) {
+      if (!file) return;
+      selectBtn.style.display = 'none';
+      progressBox.style.display = 'block';
+      modalDesc.textContent = 'Загружаем выбранный PDF-файл...';
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pages = await extractA4PagesFromPDF(arrayBuffer);
+        buildFlipbook(pages, 0);
+      } catch (err) {
+        progressText.textContent = 'Ошибка чтения PDF. Попробуйте выбрать файл заново.';
+        selectBtn.style.display = 'inline-block';
+      }
+    }
+
+    async function tryAutoLoadDefaultPDF() {
+      selectBtn.style.display = 'none';
+      progressBox.style.display = 'block';
+
+      for (const fileName of CANDIDATE_PDF_NAMES) {
+        try {
+          const response = await fetch(encodeURI(fileName));
+          if (response.ok) {
+            downloadLink.href = encodeURI(fileName);
+            progressText.textContent = 'Скачивание макета портфолио...';
+            const buffer = await response.arrayBuffer();
+            const pages = await extractA4PagesFromPDF(buffer);
+            buildFlipbook(pages, 0);
+            return;
+          }
+        } catch (e) {}
+      }
+
+      progressBox.style.display = 'none';
+      modalDesc.innerHTML = 'Убедитесь, что файл <b>portfolio.pdf</b> загружен в репозиторий GitHub рядом с <b>index.html</b>, или выберите его вручную:';
+      selectBtn.style.display = 'inline-block';
+    }
+
+    selectBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+    // Стрелки и клавиатура
+    document.getElementById('prev-btn').addEventListener('click', () => pageFlip && pageFlip.flipPrev());
+    document.getElementById('next-btn').addEventListener('click', () => pageFlip && pageFlip.flipNext());
+
+    window.addEventListener('keydown', (e) => {
+      if (!pageFlip) return;
+      if (e.key === 'ArrowRight') pageFlip.flipNext();
+      if (e.key === 'ArrowLeft') pageFlip.flipPrev();
+    });
+
+    pageSlider.addEventListener('change', (e) => {
+      if (!pageFlip) return;
+      const targetIndex = parseInt(e.target.value, 10) - 1;
+      pageFlip.flip(targetIndex);
+    });
+
+    document.querySelectorAll('.chapter-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (!pageFlip) return;
+        const targetPage = parseInt(btn.getAttribute('data-page'), 10);
+        pageFlip.flip(targetPage);
+      });
+    });
+
+    // Масштабирование (Zoom & Pan) для мыши и сенсорных экранов
+    function applyZoom() {
+      if (currentZoom <= 1.01) {
+        currentZoom = 1;
+        panOffset = { x: 0, y: 0 };
+      }
+      zoomContainer.style.transform = `translate(${panOffset.x}px, ${panOffset.y}px) scale(${currentZoom})`;
+      zoomLabel.textContent = `${Math.round(currentZoom * 100)}%`;
+      zoomContainer.style.cursor = currentZoom > 1 ? 'grab' : 'default';
+
+      // Когда чертеж приближен, отключаем перехват кликов книгой, чтобы можно было свободно двигать лист
+      const bookStage = document.getElementById('book-stage');
+      if (bookStage) {
+        bookStage.style.pointerEvents = currentZoom > 1 ? 'none' : 'auto';
+      }
+    }
+
+    document.getElementById('zoom-in-btn').addEventListener('click', () => {
+      currentZoom = Math.min(3, +(currentZoom + 0.35).toFixed(2));
+      applyZoom();
+    });
+
+    document.getElementById('zoom-out-btn').addEventListener('click', () => {
+      currentZoom = Math.max(1, +(currentZoom - 0.35).toFixed(2));
+      applyZoom();
+    });
+
+    const mainViewport = document.getElementById('main-viewport');
+
+    // Двойной клик мышью или двойной тап пальцем для быстрого приближения чертежей
+    let lastTapTime = 0;
+    mainViewport.addEventListener('pointerup', (e) => {
+      if (e.target.closest('.nav-arrow')) return;
+      const now = Date.now();
+      if (now - lastTapTime < 280) {
+        currentZoom = currentZoom > 1 ? 1 : 2.0;
+        applyZoom();
+        lastTapTime = 0;
+      } else {
+        lastTapTime = now;
+      }
+    });
+
+    // Колесико мыши / трекпад
+    mainViewport.addEventListener('wheel', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.2 : -0.2;
+        currentZoom = Math.min(3, Math.max(1, +(currentZoom + delta).toFixed(2)));
+        applyZoom();
+      }
+    }, { passive: false });
+
+    // Перемещение мышью при зуме
+    mainViewport.addEventListener('mousedown', (e) => {
+      if (currentZoom <= 1) return;
+      isPanning = true;
+      zoomContainer.classList.add('dragging');
+      panStart = { x: e.clientX - panOffset.x, y: e.clientY - panOffset.y };
+      zoomContainer.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isPanning) return;
+      panOffset = { x: e.clientX - panStart.x, y: e.clientY - panStart.y };
+      zoomContainer.style.transform = `translate(${panOffset.x}px, ${panOffset.y}px) scale(${currentZoom})`;
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isPanning) {
+        isPanning = false;
+        zoomContainer.classList.remove('dragging');
+        zoomContainer.style.cursor = currentZoom > 1 ? 'grab' : 'default';
+      }
+    });
+
+    // Сенсорное управление на смартфонах: щипок двумя пальцами (Pinch-to-Zoom) и панорамирование одним пальцем
+    let initialPinchDist = null;
+    let initialPinchZoom = 1;
+
+    mainViewport.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        isPanning = false;
+        initialPinchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        initialPinchZoom = currentZoom;
+      } else if (e.touches.length === 1 && currentZoom > 1) {
+        isPanning = true;
+        zoomContainer.classList.add('dragging');
+        panStart = {
+          x: e.touches[0].clientX - panOffset.x,
+          y: e.touches[0].clientY - panOffset.y
+        };
+      }
+    }, { passive: true });
+
+    mainViewport.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2 && initialPinchDist) {
+        e.preventDefault();
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const scale = dist / initialPinchDist;
+        currentZoom = Math.min(3, Math.max(1, +(initialPinchZoom * scale).toFixed(2)));
+        applyZoom();
+      } else if (e.touches.length === 1 && isPanning && currentZoom > 1) {
+        e.preventDefault();
+        panOffset = {
+          x: e.touches[0].clientX - panStart.x,
+          y: e.touches[0].clientY - panStart.y
+        };
+        zoomContainer.style.transform = `translate(${panOffset.x}px, ${panOffset.y}px) scale(${currentZoom})`;
+      }
+    }, { passive: false });
+
+    mainViewport.addEventListener('touchend', () => {
+      initialPinchDist = null;
+      isPanning = false;
+      zoomContainer.classList.remove('dragging');
+    });
+
+    // Звук и полный экран
+    const soundBtn = document.getElementById('sound-btn');
+    soundBtn.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      soundBtn.textContent = `Звук: ${soundEnabled ? 'Вкл' : 'Выкл'}`;
+    });
+
+    document.getElementById('fullscreen-btn').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    tryAutoLoadDefaultPDF();
+  </script>
+</body>
+</html>
